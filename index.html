@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -16,10 +16,13 @@
 		<div id="locations" data-bind="template: { name: 'poolTmpl', foreach: locations }"></div>
 		<script id="poolTmpl" type="text/html">
 		    <p>
-		        Name: <span data-bind="text: name"></span>;
+		        <strong data-bind="text: name"></strong>;
 		        Lat: <span data-bind="text: lat"></span>;
 		        Long: <span data-bind="text: lng"></span>
 		    </p>
-		</script -->
+		</script>
+		<script>
+			ko.applyBindings(viewModel);
+		</script>
 	</body>
 </html>
