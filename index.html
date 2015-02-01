@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width,initial-scale=1">
+	  <link rel="stylesheet" type="text/css" href="css/main.css">
+	  <title>Project 5 Neighbourhood Map</title>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js"></script>
+		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
+		<script src="scripts/model.js"></script>
+  </head>
+  <body>
+		<div id="Dummy">
+			<div id="map">Map</div>
+		</div>
+		<div id="locations" data-bind="template: { name: 'poolTmpl', foreach: locations }"></div>
+		<script id="poolTmpl" type="text/html">
+		    <p>
+		        Name: <span data-bind="text: name"></span>;
+		        Lat: <span data-bind="text: lat"></span>;
+		        Long: <span data-bind="text: lng"></span>
+		    </p>
+		</script -->
+	</body>
+</html>
