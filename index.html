@@ -5,24 +5,51 @@
 	  <meta name="viewport" content="width=device-width,initial-scale=1">
 	  <link rel="stylesheet" type="text/css" href="css/main.css">
 	  <title>Project 5 Neighbourhood Map</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet" type="text/css">
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js"></script>
 		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
 		<script src="scripts/model.js"></script>
   </head>
   <body>
-		<div id="Dummy">
-			<div id="map">Map</div>
+  	<header>
+  		<h1>Eastern Suburbs Ocean Pools</h1>
+  		<h2>Sydney, New South Wales, Australia</h2>
+  	</header>
+  	<div class="content">
+	  	<div class="tabs_container" data-bind="with: tabs">
+	  		<ul class="tabs clearfix">
+	  			<li class="tab" data-bind="css: { selected: mapVisible }">
+	  				<a href="#map_view" data-bind="click: showMapView">Map</a>
+	  			</li>
+	  			<li class="tab" data-bind="css: { selected: listVisible }">
+	  				<a href="#list_view" data-bind="click: showListView">List</a>
+	  			</li>
+				</ul>
+				<div class="map_view" data-bind="visible: mapVisible">
+					<input id="search-box" class="controls" type="text" placeholder="Search Box">
+					<div id="map">Map</div>
+				</div>
+				<div class="list_view" data-bind="visible: listVisible">
+					<!-- ko stopBinding: true -->
+					<table id="list_id" data-bind="foreach: locationArray()">
+						<tr style="cursor: pointer;">
+							<td data-bind="click: select, style: { backgroundColor: selected() ? '#66c547' : '#808080'}">
+								<div style="foat: left; color: White; margin: 4px">
+									<div data-bind="text: title()" style="font-weight: bold"></div>
+									<div data-bind="text: suburb" style="font-style: italics"></div>
+									<div data-bind="text: info()"></div>
+								</div>
+							</td>
+						</tr>
+					</table>
+					<!-- /ko -->
+				</div>
+			</div>
 		</div>
-		<div id="locations" data-bind="template: { name: 'poolTmpl', foreach: locations }"></div>
-		<script id="poolTmpl" type="text/html">
-		    <p>
-		        <strong data-bind="text: name"></strong>;
-		        Lat: <span data-bind="text: lat"></span>;
-		        Long: <span data-bind="text: lng"></span>
-		    </p>
-		</script>
 		<script>
 			ko.applyBindings(viewModel);
+			ko.applyBindings(listViewModel, document.getElementById("list_id"));
 		</script>
 	</body>
 </html>
