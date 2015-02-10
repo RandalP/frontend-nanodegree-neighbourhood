@@ -99,6 +99,9 @@ function LocationsDataModel() {
 
   self.locationArray = ko.observableArray(locations);
   self.selectedLocation = ko.observable();
+  self.flickr = new Flickr({
+    api_key: '562af0fb090c53b310b934fef0c87a7d'
+  });
 
   // Add LocationViewModel and map pin for each location
   for (var i in locations) {
@@ -168,9 +171,9 @@ function MapViewModel(data) {
     // Update infoWindow content and position.
     var content = self.infoTemplate.replace('%img%', location.img).replace('%name%', location.name).replace('%suburb%', location.suburb).replace('%info%', location.info);
 
+/*
     var $nytHeaderElem = $('#nytimes-header');
     var $nytElem = $('#nytimes-articles');
-
     var nytimesUrl = "http://api.nytimes.com/svc/search/v2/articlesearch.json?q='" + location.suburb + " NSW'" +
       "&sort=newest&fq=type_of_material=('News' 'Blog')" +
       "&fl=web_url,headline,snippet" +
@@ -187,6 +190,48 @@ function MapViewModel(data) {
         }
     }).error(function() {
         $nytHeaderElem.text('New York Times Articles Could Not Be Loaded');
+    });
+*/
+    data.flickr.photos.search({
+      text: location.name
+    }, function(err, result) {
+      if (err) {
+        console.log(err);
+        $('#flickr-heading').text('Flickr Images Could Not Be Loaded: ' + err);
+      }
+      else {
+        var $images = $('#flickr-images');
+
+        // Clear current content
+        $images.text('');
+
+        console.log(result.photos.photo[0]);
+
+        var fragment = document.createDocumentFragment();
+
+        for (var i in result.photos.photo) {
+          var photo = result.photos.photo[i];
+          // s: 75 x 75
+          // m: 240 on longest side
+          // t: 100 on longest side
+          // z: 640 on longest side
+          // b: 1024 on longeest side
+          var url = 'https://www.flickr.com/photos/' + photo.owner + '/' + photo.id;
+          var src = 'https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' +
+             photo.id + '_' + photo.secret + '_s.jpg';
+          var a = document.createElement('a');
+          a.href = url;
+          var img = document.createElement('img');
+          img.src = src;
+          img.style.height = 75;
+          img.style.width = 75;
+          img.classList.add('img');
+          a.insertBefore(img, a.firstChild);
+          fragment.appendChild(a);
+          //$images.append(a'<a href = "' + url + '"><img src="' + src + '" class="img"/></a>');
+        }
+        $images.append(fragment);
+      }
     });
 
     self.infoWindow.setContent(content);
@@ -213,7 +258,7 @@ function MapViewModel(data) {
     self.map = new google.maps.Map($('#map').get(0), mapOptions);
   //  self.map = new google.maps.Map(document.getElementById('map'), mapOptions);
     self.infoWindow = new google.maps.InfoWindow();
-    self.infoTemplate = $('#info_template').html();
+    self.infoTemplate = $('#info-template').html();
 
     var bounds = window.mapBounds = new google.maps.LatLngBounds();
 
