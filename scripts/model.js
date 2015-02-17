@@ -1,4 +1,15 @@
 /*
+ * From: http://firmamento.org/blog/2013/04/21/how-to-build-a-large-single-page-javascript-application-using-knockoutjs
+ * ALLOW FOR NESTED VIEW MODELS
+ */
+ko.bindingHandlers.stopBinding = {
+  init: function() {
+    return { controlsDescendantBindings: true };
+  }
+};
+ko.virtualElements.allowedBindings.stopBinding = true;
+
+/*
  * Locations DataModel
  */
 function LocationsDataModel() {
@@ -97,11 +108,16 @@ function LocationsDataModel() {
     }
   ];
 
-  self.locationArray = ko.observableArray(locations);
-  self.selectedLocation = ko.observable();
-  self.flickr = new Flickr({
-    api_key: '562af0fb090c53b310b934fef0c87a7d'
-  });
+ self.selectLocation = function() {
+    var oldLocation = self.selectedLocation();
+    if (oldLocation) {
+      // Clean up the previous selection.
+      oldLocation.selected(false);
+    }
+    self.name(this.name);
+    this.selected(true);
+    self.selectedLocation(this);
+  }
 
   // Add LocationViewModel and map pin for each location
   for (var i in locations) {
@@ -110,49 +126,138 @@ function LocationsDataModel() {
     location.ordinal = Number(i) + 1;
     location.selected = ko.observable(false);
     location.parent = self;
-
-    location.select = function() {
-      var oldLocation = self.selectedLocation();
-      if (oldLocation != null) {
-        // Clean up the previous selection.
-        oldLocation.selected(false);
-      }
-      self.selectedLocation(this);
-      this.selected(true);
-    };
+    location.select = self.selectLocation.bind(location);
   }
-};
 
-/*
- * From: http://firmamento.org/blog/2013/04/21/how-to-build-a-large-single-page-javascript-application-using-knockoutjs
- * ALLOW FOR NESTED VIEW MODELS
- */
-ko.bindingHandlers.stopBinding = {
-  init: function() {
-    return { controlsDescendantBindings: true }
-  }
-};
-ko.virtualElements.allowedBindings.stopBinding = true;
+  self.locationArray = ko.observableArray(locations);
+  self.selectedLocation = ko.observable();
+  self.name = ko.observable();
+}
 
 /*
  * Tabs ViewModel
  */
-function TabsViewModel() {
+function TabsViewModel(childVMs) {
   'use strict';
   var self = this;
   self.mapVisible = ko.observable(true);
   self.listVisible = ko.observable(false);
+  self.flickrVisible = ko.observable(false);
 
   self.showMapView = function() {
-    self.mapVisible(true);
+    self.flickrVisible(false);
     self.listVisible(false);
+    self.mapVisible(true);
+    childVMs.map.resize();
   };
 
   self.showListView = function() {
-    self.mapVisible(false);
+    self.flickrVisible(false);
     self.listVisible(true);
+    self.mapVisible(false);
+    childVMs.list.resize();
   };
-};
+
+  self.showFlickrView = function() {
+    self.flickrVisible(true);
+    self.listVisible(false);
+    self.mapVisible(false);
+    childVMs.flickr.resize();
+  };
+
+  self.resize = function(resizeEvent) {
+    if (self.mapVisible()) {
+      childVMs.map.resize(resizeEvent);
+    }
+    if (self.listVisible()) {
+      childVMs.list.resize(resizeEvent);
+    }
+    if (self.flickrVisible()) {
+      childVMs.flickr.resize(resizeEvent);
+    }
+  }
+}
+
+function FlickrViewModel(data) {
+  'use strict';
+  var self = this;
+
+  self.data = data;
+  self.imageArray = ko.observableArray([]);
+
+  self.flickr = new Flickr({
+    api_key: '562af0fb090c53b310b934fef0c87a7d'
+  });
+
+/*
+  data.imageArray.subscribe(function(imageArray) {
+    var $flickr = $('#flickr');
+    if (imageArray.length) {
+      $flickr.show();
+    }
+    else {
+      $flickr.hide();
+    }
+  });
+*/
+
+  data.selectedLocation.subscribe(function(location) {
+
+    var width = Number($('.flickr-view').css('width').slice(0, -2));
+//    console.log(width);
+
+    self.imageArray.removeAll();
+
+    self.flickr.photos.search({
+      text: location.name, // + ' Australia',
+      lat: location.lat,
+      lon: location.lng,
+      radius: 0.5,
+      geocontext: 2 // outdoors
+    }, function(err, result) {
+      if (err) {
+        console.log(err);
+        $('#flickr-heading').text('Flickr Images for ' + location.name +  'could not be loaded: ' + err);
+      }
+      else {
+        var getSizeCode = function(width) {
+          var sizeCode = 's'; // s: 75 x 75
+          if (width >= 650) {
+            sizeCode = 'z'; // z: 640 on longest side
+          } else if (width >= 250) {
+            sizeCode = 'm'; // m: 240 on longest side
+          } else if (width >= 110) {
+            sizeCode = 't'; // t: 100 on longest side
+          }
+          return sizeCode;
+        };
+
+        var imageInfo = [];
+        for (var i in result.photos.photo) {
+          var photo = result.photos.photo[i];
+          var info = {
+            url: ko.observable('https://www.flickr.com/photos/' + photo.owner + '/' + photo.id),
+            src: ko.observable('https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' +
+             photo.id + '_' + photo.secret + '_' + getSizeCode(width) + '.jpg')
+          };
+          imageInfo.push(info);
+          // console.log(info);
+        }
+        ko.utils.arrayPushAll(self.imageArray, imageInfo);
+        self.imageArray.valueHasMutated();
+      }
+    });
+  });
+
+  self.resize = function() {
+    var $flickr_view = $('.flickr-view');
+    var $flickr_images = $('#flickr-images');
+    var padding = $flickr_images.outerHeight() - $flickr_images.height();
+
+    $flickr_view.height($(window).height() - $flickr_view.offset().top);
+    $flickr_images.height($(window).height() - $flickr_images.offset().top - padding);
+  };
+}
 
 /*
  * Map ViewModel
@@ -163,77 +268,15 @@ function MapViewModel(data) {
   self.data = data;
 
   data.selectedLocation.subscribe(function(location) {
-    self.map.setCenter(location.marker.position);
-
     // Close previous infoWindow
     self.infoWindow.close();
 
     // Update infoWindow content and position.
-    var content = self.infoTemplate.replace('%img%', location.img).replace('%name%', location.name).replace('%suburb%', location.suburb).replace('%info%', location.info);
+    var content = self.infoTemplate.replace('%img%', location.img).replace('%name%', location.name).
+      replace('%suburb%', location.suburb).replace('%info%', location.info);
 
-/*
-    var $nytHeaderElem = $('#nytimes-header');
-    var $nytElem = $('#nytimes-articles');
-    var nytimesUrl = "http://api.nytimes.com/svc/search/v2/articlesearch.json?q='" + location.suburb + " NSW'" +
-      "&sort=newest&fq=type_of_material=('News' 'Blog')" +
-      "&fl=web_url,headline,snippet" +
-      "&api-key=93d36d41f4972b1e51e8b12c542df502:9:13751990";
-    $.getJSON(nytimesUrl, function(data) {
-        $nytHeaderElem.text('New York Times Articles About ' + location.suburb);
-        var articles = data.response.docs;
-        for (var i = 0, n = articles.length; i < n; ++i) {
-            var article = articles[i];
-            $nytElem.append('<li class="arcticle">' +
-                    '<a href="' + article.web_url + '">' + article.headline.main + '</a>' +
-                    '<p>' + article.snippet + '</p>' +
-                '</li>');
-        }
-    }).error(function() {
-        $nytHeaderElem.text('New York Times Articles Could Not Be Loaded');
-    });
-*/
-    data.flickr.photos.search({
-      text: location.name
-    }, function(err, result) {
-      if (err) {
-        console.log(err);
-        $('#flickr-heading').text('Flickr Images Could Not Be Loaded: ' + err);
-      }
-      else {
-        var $images = $('#flickr-images');
-
-        // Clear current content
-        $images.text('');
-
-        console.log(result.photos.photo[0]);
-
-        var fragment = document.createDocumentFragment();
-
-        for (var i in result.photos.photo) {
-          var photo = result.photos.photo[i];
-          // s: 75 x 75
-          // m: 240 on longest side
-          // t: 100 on longest side
-          // z: 640 on longest side
-          // b: 1024 on longeest side
-          var url = 'https://www.flickr.com/photos/' + photo.owner + '/' + photo.id;
-          var src = 'https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' +
-             photo.id + '_' + photo.secret + '_s.jpg';
-          var a = document.createElement('a');
-          a.href = url;
-          var img = document.createElement('img');
-          img.src = src;
-          img.style.height = 75;
-          img.style.width = 75;
-          img.classList.add('img');
-          a.insertBefore(img, a.firstChild);
-          fragment.appendChild(a);
-          //$images.append(a'<a href = "' + url + '"><img src="' + src + '" class="img"/></a>');
-        }
-        $images.append(fragment);
-      }
-    });
-
+    // Ensure map & infoWindow are centred on location
+    self.map.setCenter(location.marker.position);
     self.infoWindow.setContent(content);
     self.infoWindow.open(self.map, location.marker);
   });
@@ -243,7 +286,24 @@ function MapViewModel(data) {
    */
   self.setSelected = function(location) {
     self.data.selectedLocation(location);
-  }
+    google.maps.event.trigger(self.map, 'resize');
+  };
+
+  self.resize = function(resizeEvent) {
+    var $map_view = $('.map-view');
+
+    $map_view.height($(window).height() - $map_view.offset().top);
+
+    if (window.mapBounds) {
+      // If triggered by a resize event, we don't need to fire the event again.
+      if (!resizeEvent) {
+        google.maps.event.trigger(self.map, 'resize');
+      }
+      self.map.fitBounds(window.mapBounds);
+      self.map.setCenter(window.mapBounds.getCenter());
+      self.searchBox.setBounds(window.mapBounds);
+    }
+  };
 
   /*
    * Initialize the Google Map.
@@ -256,9 +316,9 @@ function MapViewModel(data) {
     };
 
     self.map = new google.maps.Map($('#map').get(0), mapOptions);
-  //  self.map = new google.maps.Map(document.getElementById('map'), mapOptions);
     self.infoWindow = new google.maps.InfoWindow();
     self.infoTemplate = $('#info-template').html();
+    self.resize();
 
     var bounds = window.mapBounds = new google.maps.LatLngBounds();
 
@@ -267,7 +327,7 @@ function MapViewModel(data) {
       location.marker = new google.maps.Marker({
         map: self.map,
         position: new google.maps.LatLng(location.lat, location.lng),
-        icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + ordinal + '|00FF00|000000',
+        icon: 'http://chart.apis.google.com/chart?chst=d_bubble_icon_text_small_withshadow&chld=swim|edge_bl|' + ordinal + '|74AAF7|fff',
         title: location.name
       });
 
@@ -284,21 +344,21 @@ function MapViewModel(data) {
     self.searchBox = new google.maps.places.SearchBox(input);
 
     // Listen for the event fired when the user selects an item from the
-    // pick list. Retrieve the matching places for that item.
+    // search result list. Retrieve the matching places for that item.
     google.maps.event.addListener(self.searchBox, 'places_changed', function() {
       var places = self.searchBox.getPlaces();
 
-      if (places.length == 0) {
+      if (places.length === 0) {
         return;
       }
-      for (var i = 0, marker; marker = markers[i]; i++) {
+      for (var m = 0, marker; (marker = markers[m]) !== null; m++) {
         marker.setMap(null);
       }
 
       // For each place, get the icon, place name, and location.
       markers = [];
       var bounds = new google.maps.LatLngBounds();
-      for (var i = 0, place; place = places[i]; i++) {
+      for (var p = 0, place; (place = places[p]) !== null; p++) {
         var image = {
           url: place.icon,
           size: new google.maps.Size(71, 71),
@@ -308,18 +368,15 @@ function MapViewModel(data) {
         };
 
         // Create a marker for each place.
-        var marker = new google.maps.Marker({
+        marker = new google.maps.Marker({
           map: self.map,
           icon: image,
           title: place.name,
           position: place.geometry.location
         });
-
         markers.push(marker);
-
         bounds.extend(place.geometry.location);
       }
-
       self.map.fitBounds(bounds);
     });
 
@@ -337,12 +394,18 @@ function MapViewModel(data) {
       ++i;
     });
 
+    // Ensure the map is resized.
+    //google.maps.event.trigger(window, 'resize');
+    self.resize();
+    //google.maps.event.trigger(self.map, 'resize');
+
     // fit the map to the new marker and centre it.
+    /*
     self.map.fitBounds(bounds);
     self.map.setCenter(bounds.getCenter());
-    self.searchBox.setBounds(bounds);
+    self.searchBox.setBounds(bounds); */
   };
-};
+}
 
 function ListViewModel(data) {
   'use strict';
@@ -351,25 +414,41 @@ function ListViewModel(data) {
 
   self.setSelected = function(location) {
     self.data.selectedLocation(location);
-  }
-};
+  };
 
-var data = new LocationsDataModel();
+  self.resize = function() {
+    var $list_view = $('.list-view');
+    $list_view.height($(window).height() - $list_view.offset().top);
+ };
+}
+
+var locationsDataModel = new LocationsDataModel();
 /*
  * View Models
  */
-var tabsViewModel = new TabsViewModel();
-var mapViewModel = new MapViewModel(data);
-var listViewModel = new ListViewModel(data);
+var flickrViewModel = new FlickrViewModel(locationsDataModel);
+var mapViewModel = new MapViewModel(locationsDataModel);
+var listViewModel = new ListViewModel(locationsDataModel);
+
+var tabsViewModel = new TabsViewModel({
+  flickr: flickrViewModel,
+  list: listViewModel,
+  map: mapViewModel
+});
 
 var viewModel = {
+  data: locationsDataModel,
   tabs: tabsViewModel,
+  flickr: flickrViewModel,
   map: mapViewModel,
   list: listViewModel
 };
 
-google.maps.event.addDomListener(window, 'load', mapViewModel.initializeMap);
+google.maps.event.addDomListener(window, 'load', function() {
+  mapViewModel.initializeMap();
+});
+
 google.maps.event.addDomListener(window, 'resize', function(e) {
-  mapViewModel.map.fitBounds(mapBounds);
+  tabsViewModel.resize(e);
 });
 
