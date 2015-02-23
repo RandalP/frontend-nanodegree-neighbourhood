@@ -16,7 +16,7 @@ function LocationsDataModel() {
   'use strict';
   var self = this;
 
-  var locations = [
+  self.locations = [
     {
       name: "Wally Weekes Pool",
       suburb: "North Bondi",
@@ -114,14 +114,13 @@ function LocationsDataModel() {
       // Clean up the previous selection.
       oldLocation.selected(false);
     }
-    self.name(this.name);
     this.selected(true);
     self.selectedLocation(this);
   }
 
   // Add LocationViewModel and map pin for each location
-  for (var i in locations) {
-    var location = locations[i];
+  for (var i in self.locations) {
+    var location = self.locations[i];
 
     location.ordinal = Number(i) + 1;
     location.selected = ko.observable(false);
@@ -129,14 +128,32 @@ function LocationsDataModel() {
     location.select = self.selectLocation.bind(location);
   }
 
-  self.locationArray = ko.observableArray(locations);
   self.selectedLocation = ko.observable();
-  self.name = ko.observable();
+
+  self.filterText = ko.observable('');
+  self.locationArray = ko.computed(function() {
+    var locations = self.locations;
+    var filterText = self.filterText().toLowerCase();
+    var includeAll = filterText.length === 0;
+    /* Include locations if start of name or suburb matches the filter text */
+    return ko.utils.arrayFilter(locations, function(location) {
+      return (includeAll ||
+        ko.utils.stringStartsWith(location.name.toLowerCase(), filterText) ||
+        ko.utils.stringStartsWith(location.suburb.toLowerCase(), filterText));
+    });
+  }).extend( { throttle: 100 });
+
+  self.displayFlickr = function() {
+    window.location.href = '#flickr-dialog';
+    //document.getElementById("flickr").showModal();
+    flickrViewModel.resize();
+  };
 }
 
 /*
  * Tabs ViewModel
  */
+/*
 function TabsViewModel(childVMs) {
   'use strict';
   var self = this;
@@ -177,6 +194,7 @@ function TabsViewModel(childVMs) {
     }
   }
 }
+*/
 
 function FlickrViewModel(data) {
   'use strict';
@@ -188,6 +206,7 @@ function FlickrViewModel(data) {
   self.flickr = new Flickr({
     api_key: '562af0fb090c53b310b934fef0c87a7d'
   });
+
 
 /*
   data.imageArray.subscribe(function(imageArray) {
@@ -203,7 +222,8 @@ function FlickrViewModel(data) {
 
   data.selectedLocation.subscribe(function(location) {
 
-    var width = Number($('.flickr-view').css('width').slice(0, -2));
+    var width = Number($('#flickr').css('width').slice(0, -2));
+    //var width = 640;
 //    console.log(width);
 
     self.imageArray.removeAll();
@@ -250,12 +270,19 @@ function FlickrViewModel(data) {
   });
 
   self.resize = function() {
-    var $flickr_view = $('.flickr-view');
+    var $flickr = $('#flickr');
     var $flickr_images = $('#flickr-images');
     var padding = $flickr_images.outerHeight() - $flickr_images.height();
 
-    $flickr_view.height($(window).height() - $flickr_view.offset().top);
-    $flickr_images.height($(window).height() - $flickr_images.offset().top - padding);
+    var height = $flickr.width() + $flickr_images.offset().top - $flickr.offset().top + padding;
+    $flickr.height(height);
+    $flickr_images.height($flickr.width());
+/*
+    $flickr.offset({ top: $('header').height, left: $flickr.offset().left });
+    $flickr.height($(window).height() - $flickr.offset().top);
+    // TODO: Calculate height properly
+    $flickr_images.height($(window).height() - $flickr_images.offset().top - padding - 50);
+    */
   };
 }
 
@@ -272,12 +299,11 @@ function MapViewModel(data) {
     self.infoWindow.close();
 
     // Update infoWindow content and position.
-    var content = self.infoTemplate.replace('%img%', location.img).replace('%name%', location.name).
-      replace('%suburb%', location.suburb).replace('%info%', location.info);
+    //var content = self.infoTemplate.replace('%img%', location.img).replace('%name%', location.name).
+    //  replace('%suburb%', location.suburb).replace('%info%', location.info);
 
     // Ensure map & infoWindow are centred on location
     self.map.setCenter(location.marker.position);
-    self.infoWindow.setContent(content);
     self.infoWindow.open(self.map, location.marker);
   });
 
@@ -291,8 +317,21 @@ function MapViewModel(data) {
 
   self.resize = function(resizeEvent) {
     var $map_view = $('.map-view');
+    var $list = $('#location-list');
+    var left = $list.outerWidth();
+    var offset = $map_view.offset();
 
-    $map_view.height($(window).height() - $map_view.offset().top);
+    // TODO: Avoid referencing $list
+    offset.top = $list.offset().top;
+    if ($list.offset().left >= 0) {
+      offset.left = left + 1;
+      $map_view.offset(offset);
+    }
+    else {
+      offset.left = 0;
+    }
+    $map_view.height($(window).height() - offset.top);
+    $map_view.width($(window).width() - offset.left);
 
     if (window.mapBounds) {
       // If triggered by a resize event, we don't need to fire the event again.
@@ -301,7 +340,6 @@ function MapViewModel(data) {
       }
       self.map.fitBounds(window.mapBounds);
       self.map.setCenter(window.mapBounds.getCenter());
-      self.searchBox.setBounds(window.mapBounds);
     }
   };
 
@@ -316,8 +354,14 @@ function MapViewModel(data) {
     };
 
     self.map = new google.maps.Map($('#map').get(0), mapOptions);
-    self.infoWindow = new google.maps.InfoWindow();
-    self.infoTemplate = $('#info-template').html();
+
+    self.infoWindow = new google.maps.InfoWindow({
+      content: $('#info-template').html()
+    });
+    google.maps.event.addListener(self.infoWindow, 'domready', function() {
+      ko.applyBindings(viewModel.data, document.getElementById("info-window"));
+    });
+
     self.resize();
 
     var bounds = window.mapBounds = new google.maps.LatLngBounds();
@@ -338,53 +382,13 @@ function MapViewModel(data) {
       return location.marker.position;
     }
 
-    var markers = [];
-    var input = $('#search-box').get(0);
-    self.map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-    self.searchBox = new google.maps.places.SearchBox(input);
-
-    // Listen for the event fired when the user selects an item from the
-    // search result list. Retrieve the matching places for that item.
-    google.maps.event.addListener(self.searchBox, 'places_changed', function() {
-      var places = self.searchBox.getPlaces();
-
-      if (places.length === 0) {
-        return;
+    self.data.locationArray.subscribe(function(filteredLocations) {
+      // Remove map from all locations which have been filtered out.
+      for (var l = 0, nLocation = data.locations.length; l < nLocation; l++) {
+        var location = data.locations[l];
+        var map = ko.utils.arrayFirst(filteredLocations, function(loc) { return loc.ordinal === location.ordinal; }) ? self.map : null;
+        location.marker.setMap(map);
       }
-      for (var m = 0, marker; (marker = markers[m]) !== null; m++) {
-        marker.setMap(null);
-      }
-
-      // For each place, get the icon, place name, and location.
-      markers = [];
-      var bounds = new google.maps.LatLngBounds();
-      for (var p = 0, place; (place = places[p]) !== null; p++) {
-        var image = {
-          url: place.icon,
-          size: new google.maps.Size(71, 71),
-          origin: new google.maps.Point(0, 0),
-          anchor: new google.maps.Point(17, 34),
-          scaledSize: new google.maps.Size(25, 25)
-        };
-
-        // Create a marker for each place.
-        marker = new google.maps.Marker({
-          map: self.map,
-          icon: image,
-          title: place.name,
-          position: place.geometry.location
-        });
-        markers.push(marker);
-        bounds.extend(place.geometry.location);
-      }
-      self.map.fitBounds(bounds);
-    });
-
-    // Bias the SearchBox results towards places that are within the bounds of the
-    // current map's viewport.
-    google.maps.event.addListener(map, 'bounds_changed', function() {
-      var bounds = map.getBounds();
-      self.searchBox.setBounds(bounds);
     });
 
     // Add map pin for each location
@@ -395,16 +399,9 @@ function MapViewModel(data) {
     });
 
     // Ensure the map is resized.
-    //google.maps.event.trigger(window, 'resize');
     self.resize();
-    //google.maps.event.trigger(self.map, 'resize');
-
-    // fit the map to the new marker and centre it.
-    /*
-    self.map.fitBounds(bounds);
-    self.map.setCenter(bounds.getCenter());
-    self.searchBox.setBounds(bounds); */
   };
+
 }
 
 function ListViewModel(data) {
@@ -417,9 +414,9 @@ function ListViewModel(data) {
   };
 
   self.resize = function() {
-    var $list_view = $('.list-view');
-    $list_view.height($(window).height() - $list_view.offset().top);
- };
+    var $list = $('#location-list');
+    $list.height($(window).height() - $list.offset().top);
+  };
 }
 
 var locationsDataModel = new LocationsDataModel();
@@ -430,18 +427,15 @@ var flickrViewModel = new FlickrViewModel(locationsDataModel);
 var mapViewModel = new MapViewModel(locationsDataModel);
 var listViewModel = new ListViewModel(locationsDataModel);
 
-var tabsViewModel = new TabsViewModel({
-  flickr: flickrViewModel,
-  list: listViewModel,
-  map: mapViewModel
-});
-
 var viewModel = {
   data: locationsDataModel,
-  tabs: tabsViewModel,
   flickr: flickrViewModel,
   map: mapViewModel,
-  list: listViewModel
+  list: listViewModel,
+  resize: function(e) {
+    listViewModel.resize();
+    mapViewModel.resize();
+  }
 };
 
 google.maps.event.addDomListener(window, 'load', function() {
@@ -449,6 +443,22 @@ google.maps.event.addDomListener(window, 'load', function() {
 });
 
 google.maps.event.addDomListener(window, 'resize', function(e) {
-  tabsViewModel.resize(e);
+  viewModel.resize(e);
 });
+
+/*
+ * Open the drawer when the menu ison is clicked.
+ */
+var menu = document.querySelector('#menu');
+var main = document.querySelector('main');
+var drawer = document.querySelector('.nav');
+
+menu.addEventListener('click', function(e) {
+  drawer.classList.toggle('open');
+  e.stopPropagation();
+});
+main.addEventListener('click', function() {
+  drawer.classList.remove('open');
+});
+
 

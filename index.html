@@ -10,56 +10,50 @@
 		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
 		<script src="scripts/knockout-3.2.0.debug.js"></script>
   </head>
+
   <body>
   	<header>
   		<h1>Eastern Suburbs Ocean Pools</h1>
-  		<h2>Sydney, Australia</h2>
+  		<h2 class="header__subtitle suburb">Sydney, Australia</h2>
+  		<input id="search" placeholder="Search…" type="search" data-bind="value: data.filterText, valueUpdate: 'afterkeydown'">
+      <a id="menu" class="header__menu">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/>
+        </svg>
+      </a>
   	</header>
 
-  	<div class="content">
-	  	<div class="tabs-container" data-bind="with: tabs">
-	  		<ul class="tabs clearfix">
-	  			<li class="tab" data-bind="css: { selected: mapVisible }">
-	  				<a href="#map-view" data-bind="click: showMapView">Map</a>
-	  			</li>
-	  			<li class="tab" data-bind="css: { selected: listVisible }">
-	  				<a href="#list-view" data-bind="click: showListView">List</a>
-	  			</li>
-	  			<li class="tab" data-bind="css: { selected: flickrVisible }">
-	  				<a href="#flickr-view" data-bind="click: showFlickrView">Flickr</a>
-	  			</li>
-				</ul>
+  	<main>
+	    <section id="location-list" class="nav">
+				<table data-bind="foreach: data.locationArray">
+					<tr style="cursor: pointer;">
+						<td data-bind="click: select, style: { backgroundColor: selected() ? '#3b5998' : '#f0f0f0' }">
+							<div style="float: left; margin: 4px" data-bind="style: { color: selected() ? '#fff' : '#3b5998' }">
+								<div style="font-weight: bold; display: inline">
+										<span data-bind="text: ordinal"></span>. <span data-bind="text: name"></span>
+								</div>
+								<div class="suburb" data-bind="text: suburb" style="font-style: italic"></div>
+							</div>
+						</td>
+					</tr>
+				</table>
+	    </section>
 
-				<div class="map-view" id="map-view-id" data-bind="visible: mapVisible">
-					<input id="search-box" class="controls" type="text" placeholder="Search Box">
+	    <section class="content">
+				<div class="map-view" id="map-view-id">
 					<div id="map">Map</div>
 				</div>
 
-				<div class="list-view" data-bind="visible: listVisible">
-					<!-- ko stopBinding: true -->
-					<div id="location-list">
-						<table data-bind="foreach: data.locationArray">
-							<tr style="cursor: pointer;">
-								<td data-bind="click: select, style: { backgroundColor: selected() ? '#3b5998' : '#f0f0f0' }">
-									<div style="float: left; margin: 4px" data-bind="style: { color: selected() ? '#fff' : '#3b5998' }">
-										<div style="font-weight: bold; display: inline">
-												<span data-bind="text: ordinal"></span>. <span data-bind="text: name"></span>
-										</div>
-										<div class="suburb" data-bind="text: suburb" style="font-style: italic; display: inline"></div>
-										<div class="info" data-bind="text: info"></div>
-									</div>
-								</td>
-							</tr>
-						</table>
-					</div>
-					<!-- /ko -->
-				</div>
-
-				<div class="flickr-view" data-bind="visible: flickrVisible">
-					<!-- ko stopBinding: true -->
+				<div id="flickr-dialog" class="modalDialog">
 					<div id="flickr">
-			    	<h3 id="flickr-heading" data-bind="text: data.name"></h3>
-	        	<ul id="flickr-images" data-bind="foreach: imageArray">
+						<h3 id="flickr-heading" data-bind="text: data.selectedLocation() ? data.selectedLocation().name : ''"></h3>
+						<div style="width: 13px; height: 13px; overflow: hidden; position: absolute; opacity: 0.7; right: 15px; top: 12px; z-index: 10000; cursor: pointer;">
+							<img src="http://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" style="position: absolute; left: -2px; top: -336px; width: 59px; height: 492px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px;">
+						</div>
+
+
+		    		<a href="#close" title="Close" class="close">X</a>
+						<ul id="flickr-images" data-bind="foreach: imageArray">
 	        		<li>
 	        			<a data-bind="attr: { href: url }">
 									<img data-bind="attr: { src: src }" class="img">
@@ -67,27 +61,36 @@
 							</li>
 						</ul>
 					</div>
-					<!-- /ko -->
 				</div>
-			</div>
-		</div>
+
+			</section>
+		</main>
 
     <script type="text/template" id="info-template">
-	    <header>
-	    	<img src="%img%" class="img">
-	    	<h1>%name%</h1>
-	    	<h2>%suburb%</h2>
-	    </header>
-	    <div>
-	    	<p>%info%</p>
-    	</div>
+    	<!-- ko stopBinding: true -->
+			<div id="info-window">
+		    <header>
+		    	<img data-bind="attr: { src: selectedLocation().img }" class="img">
+		    	<h1 data-bind="text: selectedLocation().name"></h1>
+		    	<h2 data-bind="text: selectedLocation().suburb" class="suburb"></h2>
+		    </header>
+		    <div>
+		    	<p data-bind="text: selectedLocation().info"></p>
+	    	</div>
+	    	<div>
+	    		<button id="flickr-btn" type="button" data-bind="click: displayFlickr">Flickr</button>
+	    	</div>
+			</div>
+			<!-- /ko -->
     </script>
+
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="scripts/flickrapi.dev.js"></script>
 		<script src="scripts/model.js"></script>
 		<script>
-			ko.applyBindings(viewModel);
 			ko.applyBindings(viewModel.list, document.getElementById("location-list"));
+			ko.applyBindings(viewModel.list, document.getElementById("search"));
+			//ko.applyBindings(viewModel.data, document.getElementById("info-window"));
 			ko.applyBindings(viewModel.flickr, document.getElementById("flickr"));
 		</script>
 	</body>
