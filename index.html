@@ -15,7 +15,7 @@
   	<header>
   		<h1>Eastern Suburbs Ocean Pools</h1>
   		<h2 class="header__subtitle suburb">Sydney, Australia</h2>
-  		<input id="search" placeholder="Search…" type="search" data-bind="value: data.filterText, valueUpdate: 'afterkeydown'">
+  		<input id="search" placeholder="Search…" type="search" data-bind="value: filterText, valueUpdate: 'afterkeydown'">
       <a id="menu" class="header__menu">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/>
@@ -25,7 +25,7 @@
 
   	<main>
 	    <section id="location-list" class="nav">
-				<table data-bind="foreach: data.locationArray">
+				<table data-bind="foreach: locationArray">
 					<tr style="cursor: pointer;">
 						<td data-bind="click: select, style: { backgroundColor: selected() ? '#3b5998' : '#f0f0f0' }">
 							<div style="float: left; margin: 4px" data-bind="style: { color: selected() ? '#fff' : '#3b5998' }">
@@ -43,16 +43,18 @@
 				<div class="map-view" id="map-view-id">
 					<div id="map">Map</div>
 				</div>
+			</section>
 
-				<div id="flickr-dialog" class="modalDialog">
-					<div id="flickr">
-						<h3 id="flickr-heading" data-bind="text: data.selectedLocation() ? data.selectedLocation().name : ''"></h3>
-						<div style="width: 13px; height: 13px; overflow: hidden; position: absolute; opacity: 0.7; right: 15px; top: 12px; z-index: 10000; cursor: pointer;">
+			<section>
+				<div id="flickr" class="modalDialog">
+					<div id="flickr-view">
+						<h3 id="flickr-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : ''"></h3>
+						<div id ="close">
 							<img src="http://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" style="position: absolute; left: -2px; top: -336px; width: 59px; height: 492px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px;">
 						</div>
 
 
-		    		<a href="#close" title="Close" class="close">X</a>
+		    		<!-- a href="#close" title="Close" class="close">X</a -->
 						<ul id="flickr-images" data-bind="foreach: imageArray">
 	        		<li>
 	        			<a data-bind="attr: { href: url }">
@@ -62,12 +64,11 @@
 						</ul>
 					</div>
 				</div>
-
 			</section>
+
 		</main>
 
     <script type="text/template" id="info-template">
-    	<!-- ko stopBinding: true -->
 			<div id="info-window">
 		    <header>
 		    	<img data-bind="attr: { src: selectedLocation().img }" class="img">
@@ -81,17 +82,15 @@
 	    		<button id="flickr-btn" type="button" data-bind="click: displayFlickr">Flickr</button>
 	    	</div>
 			</div>
-			<!-- /ko -->
     </script>
 
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 		<script src="scripts/flickrapi.dev.js"></script>
 		<script src="scripts/model.js"></script>
 		<script>
-			ko.applyBindings(viewModel.list, document.getElementById("location-list"));
-			ko.applyBindings(viewModel.list, document.getElementById("search"));
-			//ko.applyBindings(viewModel.data, document.getElementById("info-window"));
-			ko.applyBindings(viewModel.flickr, document.getElementById("flickr"));
+			ko.applyBindings(locationsViewModel, document.getElementById("search"));
+			ko.applyBindings(locationsViewModel, document.getElementById("location-list"));
+			ko.applyBindings(flickrViewModel, document.getElementById("flickr"));
 		</script>
 	</body>
 </html>
