@@ -151,7 +151,7 @@ input[type="search"] {
   background: -o-linear-gradient(#fff, #999);
 }
 
-#close {
+.close {
   width: 13px;
   height: 13px;
   overflow: hidden;
@@ -163,10 +163,11 @@ input[type="search"] {
   cursor: pointer;
 }
 
-#close-image {
+.close-image {
   position: absolute;
   left: -2px;
-  //-webkit-user-select: none;
+  top: -336px;
+  -webkit-user-select: none;
   border: 0px;
   padding: 0px;
   margin: 0px;

@@ -20,7 +20,7 @@ function LocationsDataModel() {
     {
       name: "Wally Weekes Pool",
       suburb: "North Bondi",
-      img: "images/Wally-Weekes.jpg",
+      img: "img/Wally-Weekes.jpg",
       info: "A very popular pool to take the kids as it’s a tidal pool that was transformed into a rock pool.",
       lat: -33.891492,
       lng: 151.282316
@@ -36,7 +36,7 @@ function LocationsDataModel() {
     {
       name: "Bronte Baths",
       suburb: "Bronte",
-      img: "images/Bronte-Baths.jpg",
+      img: "img/Bronte-Baths.jpg",
       info: "Probably the most photographed of all of Sydney’s rock pools. Just along the Southern Coastal Walk. Bronte park as working bbqs a wonderful place to go for a evening swim then bbq with friends afterwards.",
       lat: -33.905049,
       lng: 151.269079
@@ -45,7 +45,7 @@ function LocationsDataModel() {
     {
       name: "Clovelly Ocean Pool",
       suburb: "Clovelly",
-      img: "images/400x300_Clovelly-Pool.jpg",
+      img: "img/400x300_Clovelly-Pool.jpg",
       info: "A saltwater lap pool located next to Clovelly Beach on the concrete promenade.",
       lat: -33.914189,
       lng: 151.266941
@@ -53,7 +53,7 @@ function LocationsDataModel() {
     {
       name: "Giles Baths",
       suburb: "Coogee",
-      img: "images/400x300_Giles-Baths.jpg",
+      img: "img/400x300_Giles-Baths.jpg",
       info: "A popular swimming hole with young people and a fun place to explore from Coogee Beach. It’s located at the foot of the northern headland.",
       lat: -33.920017,
       lng: 151.260641
@@ -61,7 +61,7 @@ function LocationsDataModel() {
     {
       name: "Ross Jones Memorial Pool",
       suburb: "Coogee",
-      img: "images/400x300_Ross-Jones.jpg",
+      img: "img/400x300_Ross-Jones.jpg",
       info: "Located at the southern end of Coogee Beach, this man-made ocean pool is lots of fun for the family and gets crowded on a hot summer’s day.",
       lat: -33.922878,
       lng: 151.257858
@@ -69,7 +69,7 @@ function LocationsDataModel() {
     {
       name: "McIver's Baths",
       suburb: "Coogee",
-      img: "images/400x300_McIvers.jpg",
+      img: "img/400x300_McIvers.jpg",
       info: "The last remaining women’s-only seawater baths in Australia. There's a large concrete sea pool, brick sunbathing area, amenities block, change rooms and small clubhouse.",
       lat: -33.924103,
       lng: 151.258390
@@ -77,7 +77,7 @@ function LocationsDataModel() {
     {
       name: "Wylie's Bath",
       suburb: "Coogee",
-      img: "images/400x300_Wylies.jpg",
+      img: "img/400x300_Wylies.jpg",
       info: "An iconic sight on the Coogee ocean landscape, Wylies Baths was built in 1907 and enjoys stunning views across Coogee Bay.",
       lat: -33.925476,
       lng: 151.259100
@@ -85,7 +85,7 @@ function LocationsDataModel() {
     {
       name: "Ivor Rowe Rockpool",
       suburb: "South Coogee",
-      img: "images/400x300_Ivor-Rowe.jpg",
+      img: "img/400x300_Ivor-Rowe.jpg",
       info: "One of the smallest ocean pools along the Coastal Walkway. It is a natural, shallow rock pool and perfect for wading or cooling down on a hot day.",
       lat: -33.933177,
       lng: 151.261701
@@ -93,7 +93,7 @@ function LocationsDataModel() {
     {
       name: "Mahon Pool",
       suburb: "Maroubra",
-      img: "images/400x300_Mahon-Pool.jpg",
+      img: "img/400x300_Mahon-Pool.jpg",
       info: "The Mahon rock pool is located to the north of Maroubra Beach at the base of Jack Vanny Reserve. The exposed rock outcrops and cliffs above make it a spectacular venue and it is the home of the Maroubra Seals Winter Swimming Club.",
       lat: -33.942808,
       lng: 151.263836
@@ -101,7 +101,7 @@ function LocationsDataModel() {
     {
       name: "Malabar Pool",
       suburb: "Malabar",
-      img: "images/400x300_Malabar-Ocean-Pool.jpg",
+      img: "img/400x300_Malabar-Ocean-Pool.jpg",
       info: "Malabar Ocean Pool is located near Malabar Beach in Long Bay directly below Randwick Golf Club. It has spectacular views over Long Bay and onto the Randwick Rifle Range.",
       lat: -33.968516,
       lng: 151.254552
@@ -132,6 +132,11 @@ function LocationsViewModel(data) {
   self.displayFlickr = function() {
     window.location.href = '#flickr';
     flickrViewModel.resize();
+  };
+
+  self.displayWeather = function() {
+    window.location.href = '#weather';
+    weatherViewModel.resize();
   };
 
   self.selectLocation = function() {
@@ -386,6 +391,49 @@ function FlickrViewModel(viewModel) {
 }
 
 
+/**
+ * WeatherViewModel
+ */
+function WeatherViewModel(viewModel) {
+  'use strict';
+  var self = this;
+
+  self.viewModel = viewModel;
+/*
+  self.forecast = new Forecast({
+    APIKey: '2e2344aac39eeec30969f17aff17d447',
+    timeout: 1000
+  });
+*/
+  viewModel.selectedLocation.subscribe(function(location) {
+    /*
+    forecast.get(location.lat, location.lng, function(err, res, data) {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        log('res: ' + util.inspect(res));
+        log('data: ' + util.inspect(data));
+      }
+    });
+
+    var url = 'https://api.openweathermap.org/data/2.5/weather?lat=' + location.lat + '&lon=' + location.lng +
+       '&appid=' +
+       '&callback=';
+    $.ajax(url, {
+      type: 'GET',
+      datatype: 'jsonp',
+      error: function(e) {
+        console.log(e.status + ' ' + e.statusText);
+      }
+    })
+*/
+  });
+
+  self.resize = function() {
+  };
+}
+
 /*
  * Data Model
  */
@@ -397,11 +445,13 @@ var locationsDataModel = new LocationsDataModel();
 var locationsViewModel = new LocationsViewModel(locationsDataModel);
 var mapViewModel = new MapViewModel(locationsViewModel);
 var flickrViewModel = new FlickrViewModel(locationsViewModel);
+var weatherViewModel = new WeatherViewModel(locationsViewModel);
 
 google.maps.event.addDomListener(window, 'resize', function(e) {
   locationsViewModel.resize();
   mapViewModel.resize(e);
   flickrViewModel.resize();
+  //weatherViewMode.resize();
 });
 
 
@@ -420,7 +470,11 @@ main.addEventListener('click', function() {
   drawer.classList.remove('open');
 });
 
-$('#close').click(function() {
+$('#close-flickr').click(function() {
+  window.history.back();
+});
+
+$('#close-weather').click(function() {
   window.history.back();
 });
 

@@ -8,7 +8,7 @@
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet" type="text/css">
 		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
-		<script src="scripts/knockout-3.2.0.js"></script>
+		<script src="js/knockout-3.2.0.js"></script>
   </head>
 
   <body>
@@ -49,8 +49,8 @@
 				<div id="flickr" class="modalDialog">
 					<div id="flickr-view">
 						<h3 id="flickr-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : ''"></h3>
-						<div id ="close">
-							<img src="http://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" style="position: absolute; left: -2px; top: -336px; width: 59px; height: 492px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px;">
+						<div id ="close-flickr" class="close">
+							<img class="close-image" src="http://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false">
 						</div>
 						<ul id="flickr-images" data-bind="foreach: imageArray">
 	        		<li>
@@ -59,6 +59,17 @@
 								</a>
 							</li>
 						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<div id="weather" class="modalDialog">
+					<div id="weather-view">
+						<h3 id="weather-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : ''"></h3>
+						<div id ="close-weather" class="close">
+							<img class="close-image" src="http://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false">
+						</div>
 					</div>
 				</div>
 			</section>
@@ -77,17 +88,20 @@
 	    	</div>
 	    	<div>
 	    		<button id="flickr-btn" type="button" data-bind="click: displayFlickr">Flickr</button>
+	    		<button id="weather-btn" type="button" data-bind="click: displayWeather">Weather</button>
 	    	</div>
 			</div>
     </script>
 
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-		<script src="scripts/flickrapi.js"></script>
-		<script src="scripts/model.js"></script>
+		<script src="js/flickrapi.js"></script>
+		<script src="js/flickrapi.js"></script>
+		<script src="js/model.js"></script>
 		<script>
 			ko.applyBindings(locationsViewModel, document.getElementById("search"));
 			ko.applyBindings(locationsViewModel, document.getElementById("location-list"));
 			ko.applyBindings(flickrViewModel, document.getElementById("flickr"));
+			ko.applyBindings(weatherViewModel, document.getElementById("weather"));
 		</script>
 	</body>
 </html>
