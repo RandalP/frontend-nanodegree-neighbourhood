@@ -117,7 +117,7 @@ function LocationsViewModel(data) {
 
   self.filterText = ko.observable('');
 
-  self.locationArray = ko.computed(function() {
+  self.locationArray = ko.pureComputed(function() {
     var locations = data.locations;
     var filterText = self.filterText().toLowerCase();
     var includeAll = filterText.length === 0;
@@ -312,9 +312,30 @@ function FlickrViewModel(viewModel) {
     api_key: '562af0fb090c53b310b934fef0c87a7d'
   });
 
-  viewModel.selectedLocation.subscribe(function(location) {
+  self.currentWidth = function() {
+    return Number($('#flickr-view').css('width').slice(0, -2));
+  }
 
-    var width = Number($('#flickr-view').css('width').slice(0, -2));
+  self.triggerResize = ko.observable();
+
+  // Create observable so we can adjust as screen resizes.
+  self.sizeCode = ko.computed(function() {
+    // Image size should be based on size of #flickr-view
+    self.triggerResize();
+
+    var width = self.currentWidth();
+    var sizeCode = 's'; // s: 75 x 75
+    if (width >= 650) {
+      sizeCode = 'z'; // z: 640 on longest side
+    } else if (width >= 250) {
+      sizeCode = 'm'; // m: 240 on longest side
+    } else if (width >= 110) {
+      sizeCode = 't'; // t: 100 on longest side
+    }
+    return sizeCode;
+  });
+
+  viewModel.selectedLocation.subscribe(function(location) {
 
     self.imageArray.removeAll();
 
@@ -330,25 +351,15 @@ function FlickrViewModel(viewModel) {
         $('#flickr-heading').text('Flickr Images for ' + location.name +  'could not be loaded: ' + err);
       }
       else {
-        var getSizeCode = function(width) {
-          var sizeCode = 's'; // s: 75 x 75
-          if (width >= 650) {
-            sizeCode = 'z'; // z: 640 on longest side
-          } else if (width >= 250) {
-            sizeCode = 'm'; // m: 240 on longest side
-          } else if (width >= 110) {
-            sizeCode = 't'; // t: 100 on longest side
-          }
-          return sizeCode;
-        };
-
-        var imageInfo = [];
+         var imageInfo = [];
         for (var i in result.photos.photo) {
           var photo = result.photos.photo[i];
           var info = {
             url: ko.observable('https://www.flickr.com/photos/' + photo.owner + '/' + photo.id),
-            src: ko.observable('https://farm' + photo.farm + '.staticflickr.com/' + photo.server + '/' +
-             photo.id + '_' + photo.secret + '_' + getSizeCode(width) + '.jpg')
+            src: ko.computed(function() {
+              return 'https://farm' + this.farm + '.staticflickr.com/' + this.server + '/' +
+                this.id + '_' + this.secret + '_' + self.sizeCode() + '.jpg';
+            }, photo)
           };
           imageInfo.push(info);
         }
@@ -369,6 +380,8 @@ function FlickrViewModel(viewModel) {
 
     $flickr_view.height(height);
     $flickr_images.height(height - imageOffset + viewOffset);
+    // Trigger image resizing.
+    self.triggerResize.notifySubscribers();
   };
 }
 
@@ -388,6 +401,7 @@ var flickrViewModel = new FlickrViewModel(locationsViewModel);
 google.maps.event.addDomListener(window, 'resize', function(e) {
   locationsViewModel.resize();
   mapViewModel.resize(e);
+  flickrViewModel.resize();
 });
 
 

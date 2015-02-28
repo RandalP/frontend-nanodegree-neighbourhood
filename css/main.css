@@ -44,62 +44,6 @@ input[type="search"] {
   display: none;
 }
 
-@media screen and (max-width: 349px) {
-  body {
-    font-size: 50%;
-  }
-}
-
-@media screen and (min-width: 350px) and (min-height: 350px) {
-  body {
-    font-size: 65%;
-  }
-}
-
-@media screen and (min-width: 350px) {
-  body {
-    font-size: 75%;
-  }
-}
-
-@media screen and (min-width: 400px) {
-  body {
-    font-size: 85%;
-  }
-}
-
-@media screen and (max-width: 499px) {
-  .nav {
-    z-index: 10;
-    background-color: #fff;
-    position: absolute;
-    -webkit-transform: translate(-300px, 0);
-    transform: translate(-300px, 0);
-    transition: transform 0.3s ease;
-  }
-  .nav.open {
-    -webkit-transform: translate(0, 0);
-    transform: translate(0, 0);
-  }
-  .header__menu {
-    display: inline-block;
-    position: absolute;
-    right: 0;
-    padding: 0.25em;
-  }
-  .header__menu svg {
-    height: 2em;
-    width: 2em;
-    fill: #E0E0E0;
-  }
-}
-
-@media screen and (min-width: 800px) {
-  body {
-    font-size: 100%;
-  }
-}
-
 #info-windows {
   z-order: 1000;
 }
@@ -164,23 +108,13 @@ input[type="search"] {
   overflow: auto;
 }
 
-/* All widths based on standard image size with padding: 5px; */
-
-@media screen and (max-width: 350px) and (max-height: 350px) {
-  #flickr-view, #flickr-images {
-    width: 250px;
-  }
+#flickr-view, #flickr-images {
+  width: 250px;
 }
 
-@media screen and (min-width: 750px) and (min-height: 750px) {
+@media only screen and (min-width: 750px) and (min-height: 750px) {
   #flickr-view, #flickr-images {
     width: 650px;
-  }
-}
-
-@media screen and (min-width: 1150px) and (min-height: 1150px) {
-  #flickr-view, #flickr-images {
-    width: 1034px;
   }
 }
 
@@ -254,4 +188,54 @@ button {
   -moz-border-radius:4px;
   -webkit-border-radius:4px;
   border:1px solid #1A87B9
+}
+
+@media only screen and (max-width: 349px) and (orientation: portrait), (max-height: 349px) and (orientation: landscape) {
+  body {
+    font-size: 50%;
+  }
+}
+
+@media only screen and (min-width: 350px) and (orientation: portrait), (min-height: 350px) and (orientation: landscape) {
+  body {
+    font-size: 65%;
+  }
+}
+
+@media only screen and (min-width: 400px) and (orientation: portrait), (min-height: 400px) and (orientation: landscape) {
+  body {
+    font-size: 75%;
+  }
+}
+
+@media only screen and (max-width: 499px) {
+  .nav {
+    z-index: 10;
+    background-color: #fff;
+    position: absolute;
+    -webkit-transform: translate(-300px, 0);
+    transform: translate(-300px, 0);
+    transition: transform 0.3s ease;
+  }
+  .nav.open {
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+  }
+  .header__menu {
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    padding: 0.25em;
+  }
+  .header__menu svg {
+    height: 2em;
+    width: 2em;
+    fill: #E0E0E0;
+  }
+}
+
+@media only screen and (min-width: 800px) and (orientation: portrait), (min-height: 800px) and (orientation: landscape) {
+  body {
+    font-size: 100%;
+  }
 }

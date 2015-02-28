@@ -8,7 +8,7 @@
 
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet" type="text/css">
 		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
-		<script src="scripts/knockout-3.2.0.debug.js"></script>
+		<script src="scripts/knockout-3.2.0.js"></script>
   </head>
 
   <body>
@@ -52,9 +52,6 @@
 						<div id ="close">
 							<img src="http://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" style="position: absolute; left: -2px; top: -336px; width: 59px; height: 492px; -webkit-user-select: none; border: 0px; padding: 0px; margin: 0px;">
 						</div>
-
-
-		    		<!-- a href="#close" title="Close" class="close">X</a -->
 						<ul id="flickr-images" data-bind="foreach: imageArray">
 	        		<li>
 	        			<a data-bind="attr: { href: url }">
@@ -85,7 +82,7 @@
     </script>
 
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-		<script src="scripts/flickrapi.dev.js"></script>
+		<script src="scripts/flickrapi.js"></script>
 		<script src="scripts/model.js"></script>
 		<script>
 			ko.applyBindings(locationsViewModel, document.getElementById("search"));
