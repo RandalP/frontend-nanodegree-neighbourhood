@@ -197,6 +197,26 @@ input[type="search"] {
   margin: 0px;
 }
 
+input[type="checkbox"] {
+    vertical-align: middle;
+    margin-left: 2em;
+    margin-right: 0;
+}
+
+input[type="checkbox"] + label {
+    color: white;
+    cursor: pointer;
+}
+
+input[type="checkbox"] + label:before /*span */ {
+    font-size: 1.75em;
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    height: 19px;
+    margin: 1px 4px 0 0;
+}
+
 button {
   background: #25A6E1;
   background: -moz-linear-gradient(top,#25A6E1 0%,#188BC0 100%);

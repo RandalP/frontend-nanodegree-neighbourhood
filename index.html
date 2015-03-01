@@ -16,10 +16,10 @@
   		<h1>Eastern Suburbs Ocean Pools</h1>
   		<h2 class="header-subtitle suburb">Sydney, Australia</h2>
   		<input id="search" placeholder="Search…" type="search" data-bind="value: filterText, valueUpdate: 'afterkeydown'">
-  		<input id="rockPool" type="checkbox" value="" name="check">
-  		<label>Rock Pools</label>
-  		<input id="manMade" type="checkbox" value="" name="check">
-  		<label>Man Made</label>
+  		<input id="rockPool" type="checkbox" value="" name="check"/>
+  		<label for="rockPool"><!--span></span-->Rock Pool</label>
+  		<input id="manMade" type="checkbox" value="" name="check"/>
+  		<label for="manMade"><!--span></span-->Man Made</label>
       <a id="menu" class="header-menu">
         <svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path d="M2 6h20v3H2zm0 5h20v3H2zm0 5h20v3H2z"/>
@@ -43,69 +43,64 @@
 				</table>
 	    </section>
 
-	    <section class="content">
-				<div class="map-view" id="map-view-id">
-					<div id="map">Map</div>
-				</div>
+	    <section class="map-view" id="map-view-id">
+				<div id="map">Map</div>
 			</section>
 
-			<section>
-				<div id="flickr" class="modalDialog">
-					<div id="flickr-view">
-						<h2 id="flickr-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : errorMessage"></h2>
-						<div id ="close-flickr" class="close">
-							<img class="close-image" src="https://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" alt="close">
-						</div>
-						<ul id="flickr-images" data-bind="foreach: imageArray">
-	        		<li>
-	        			<a data-bind="attr: { href: url }">
-									<img data-bind="attr: { src: src }" class="img">
-								</a>
-							</li>
-						</ul>
+			<section id="flickr" class="modalDialog">
+				<div id="flickr-view">
+					<h2 id="flickr-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : ''"></h2>
+					<div id ="close-flickr" class="close">
+						<img class="close-image" src="https://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" alt="close">
 					</div>
+					<div id="flickr-error" data-bind="text: errorMessage"></div>
+					<ul id="flickr-images" data-bind="foreach: imageArray; visible: errorMessage().length === 0">
+        		<li>
+        			<a data-bind="attr: { href: url }">
+								<img data-bind="attr: { src: src }" class="img">
+							</a>
+						</li>
+					</ul>
 				</div>
 			</section>
 
-			<section>
-				<div id="weather" class="modalDialog">
-					<div id="weather-view">
-						<h2 id="weather-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : errorMessage"></h2>
-						<div id ="close-weather" class="close">
-							<img class="close-image" src="https://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" alt="close">
+			<section id="weather" class="modalDialog">
+				<div id="weather-view">
+					<h2 id="weather-heading" data-bind="text: viewModel.selectedLocation() ? viewModel.selectedLocation().name : ''"></h2>
+					<div id ="close-weather" class="close">
+						<img class="close-image" src="https://maps.gstatic.com/mapfiles/api-3/images/mapcnt3.png" draggable="false" alt="close">
+					</div>
+					<div id="weather-error" data-bind="text: errorMessage"></div>
+					<div data-bind="visible: errorMessage().length === 0">
+						<h3 data-bind="text: time"></h3>
+						<div class="today">
+						 	<img data-bind="attr: { src: imgSrc }" height="72" width="72" class="img" alt="Weather" />
+						 	<div class="temperature">
+						 		<span data-bind="text: temperature"></span>
+						 	</div>
+						 	<div class="description">
+						 		<span data-bind="text: summary"></span>  · Feels Like <span data-bind="text: apparentTemperature"></span>
+						 	</div>
+						 	<div class="info">
+								<p>Humidity <span data-bind="text: humidity"></span></p>
+								<p>Dew Point <span data-bind="text: dewPoint"></span></p>
+						 		<p>Chance of Rain <span data-bind="text: precipProbability"></span></p>
+	   						<p>Pressure <span data-bind="text: pressure"></span></p>
+						 	</div>
 						</div>
-						<div>
-							<h3 data-bind="text: time"></h3>
-							<div class="today">
-							 	<img data-bind="attr: { src: imgSrc }" height="72 width="72" class="img" alt="Weather">
-							 	<div class="temperature">
-							 		<span data-bind="text: temperature"></span>
-							 	</div>
-							 	<div class="description">
-							 		<span data-bind="text: summary"></span>  · Feels Like <span data-bind="text: apparentTemperature"></span>
-							 	</div>
-							 	<div class="info">
-									<p>Humidity <span data-bind="text: humidity"></span></p>
-									<p>Dew Point <span data-bind="text: dewPoint"></span></p>
-							 		<p>Chance of Rain <span data-bind="text: precipProbability"></span></p>
-		   						<p>Pressure <span data-bind="text: pressure"></span></p>
-							 	</div>
+						<div class="tomorrow">
+							<h3>Next 24 Hours</h3>
+							<div class="description" data-bind="text: nextDay">
 							</div>
-							<div class="tomorrow">
-								<h3>Next 24 Hours</h3>
-								<div class="description" data-bind="text: nextDay">
-								</div>
-							</div>
-							<div class="nextWeek">
-								<h3>Next 7 Days</h3>
-							 	<div class="description" data-bind="text: nextWeek">
-							 	</div>
-							</div>
+						</div>
+						<div class="nextWeek">
+							<h3>Next 7 Days</h3>
+						 	<div class="description" data-bind="text: nextWeek">
+						 	</div>
 						</div>
 					</div>
 				</div>
 			</section>
-
 		</main>
 
     <script type="text/template" id="info-template">

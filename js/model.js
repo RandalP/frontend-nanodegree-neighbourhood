@@ -133,7 +133,7 @@ function LocationsViewModel(data) {
     var locations = data.locations;
     var filterText = self.filterText().toLowerCase();
     var includeAll = filterText.length === 0;
-    /* Include locations if start of name or suburb matches the filter text */
+    // Include locations if start of name or suburb matches the filter text
     return ko.utils.arrayFilter(locations, function(location) {
       return (includeAll ||
         location.name.toLowerCase().indexOf(filterText) === 0 ||
@@ -168,21 +168,15 @@ function LocationsViewModel(data) {
   self.resize = function() {
     var $list = $('#location-list');
     $list.height($(window).height() - $list.offset().top);
-    /*
-    // Return right coordinate.
-    return $list.offset().left + $list.width(); */
   };
 
   self.topRight = function() {
     var $list = $('#location-list');
     var offset = $list.offset();
 
-    // TODO: Avoid referencing $list
     if (offset.left < 0) {
       offset.left = 0;
-    }
-    else
-    {
+    } else {
       offset.left = $list.width() + 1;
     }
     return offset;
@@ -225,6 +219,8 @@ function MapViewModel(viewModel) {
     location.marker.setAnimation(google.maps.Animation.BOUNCE);
     setTimeout(function() {
       location.marker.setAnimation(null);
+      // Pause to reduce jerky transition from animation to window opening.
+      setTimeout(function(){}, 100);
       self.infoWindow.open(self.map, location.marker);
     }, 700);
   });
@@ -371,10 +367,11 @@ function FlickrViewModel(viewModel) {
     }, function(err, result) {
       if (err) {
         self.errorMessage('Flickr Images for ' + location.name +  'could not be loaded.');
-        console.log(err); // TODO???
-      }
-      else {
-         var imageInfo = [];
+      } else {
+        // Clear error
+        self.errorMessage('');
+
+        var imageInfo = [];
         for (var i in result.photos.photo) {
           var photo = result.photos.photo[i];
           var info = {
@@ -436,15 +433,16 @@ function WeatherViewModel(viewModel) {
 
     var requestTimeout = setTimeout(function() {
         self.errorMessage('Failed to get weather information for ' + location.name);
-    }, 10);
+    }, 100);
 
     $.ajax({
       url: 'https:///api.forecast.io/forecast/2e2344aac39eeec30969f17aff17d447/' + location.lat + ',' + location.lng +
-        '?units=auto', //&exclude=daily,hourly,minutely,alerts',
+        '?units=auto&exclude=minutely,alerts',
       dataType: 'jsonp',
       success: function(data) {
 
-        console.log(data); // TODO: Remove
+        // Clear error
+        self.errorMessage('');
 
         var imperial = (data.flags.units === 'us');
         var temperatureUnits = '°C';
@@ -500,7 +498,7 @@ google.maps.event.addDomListener(window, 'resize', function(e) {
   locationsViewModel.resize();
   mapViewModel.resize(e);
   flickrViewModel.resize();
-  //weatherViewMode.resize();
+  weatherViewModel.resize();
 });
 
 
