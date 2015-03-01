@@ -40,7 +40,7 @@ input[type="search"] {
   font-size: 1.25em;
 }
 
-.header__menu {
+.header-menu {
   display: none;
 }
 
@@ -66,7 +66,8 @@ input[type="search"] {
 }
 
 .gm-style-iw .img {
-  max-width: 100px;
+  width: 100px;
+  height: 75px;
   float: left;
   margin-right: 0.5em;
 }
@@ -110,6 +111,29 @@ input[type="search"] {
 
 #flickr-view, #flickr-images {
   width: 250px;
+}
+
+#weather-view {
+  max-width: 300px;
+}
+
+.modalDialog h2 {
+  color: black;
+}
+
+.today.img{
+  display: inline-block;
+}
+
+
+.temperature {
+  font-size: 2em;
+  display: inline-block;
+}
+
+.description {
+  display: block;
+  font-size: 1.17em;
 }
 
 @media only screen and (min-width: 750px) and (min-height: 750px) {
@@ -222,14 +246,14 @@ button {
     -webkit-transform: translate(0, 0);
     transform: translate(0, 0);
   }
-  .header__menu {
+  .header-menu {
     display: inline-block;
     position: absolute;
     right: 0;
     padding: 0.25em;
   }
-  .header__menu svg {
-    height: 2em;
+  .header-menu svg {
+    height: 1.75em;
     width: 2em;
     fill: #E0E0E0;
   }
