@@ -121,10 +121,10 @@ input[type="search"] {
   color: black;
 }
 
-.today.img{
+.today .img {
   display: inline-block;
+  vertical-align: middle;
 }
-
 
 .temperature {
   font-size: 2em;
@@ -199,7 +199,7 @@ input[type="search"] {
 
 input[type="checkbox"] {
     vertical-align: middle;
-    margin-left: 2em;
+    margin-left: 1.25em;
     margin-right: 0;
 }
 
@@ -208,7 +208,7 @@ input[type="checkbox"] + label {
     cursor: pointer;
 }
 
-input[type="checkbox"] + label:before /*span */ {
+input[type="checkbox"] + label:before {
     font-size: 1.75em;
     content: "";
     display: inline-block;
