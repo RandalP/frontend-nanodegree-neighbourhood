@@ -1,9 +1,11 @@
-frontend-nanodegree-neighbourhood-map
-=====================================
+frontend-nanodegree-neighbourhood
+=================================
+
+Project 5 Udacity Front-end Web Developer Nanodegree
 
 Based on this [Udacity Project 5 rubric](https://www.udacity.com/course/viewer/#!/c-nd001/l-2711658591/m-2684328537).
 
-The site can be found online at [map](https://randalp.github.io/frontend-nanodegree-neighbourhood-map/site).
+The site can be found online at [map](https://randalp.github.io/frontend-nanodegree-neighbourhood/site).
 
 Description
 ============
