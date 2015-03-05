@@ -12,8 +12,10 @@ var portNum = 8080;
 
 gulp.task('css', function() {
 	var minifyCss = require('gulp-minify-css');
+  var autoprefixer = require('gulp-autoprefixer');
 
 	return gulp.src(['css/*'], { base: './' })
+    .pipe(autoprefixer({ cascade: false }))
     .pipe(minifyCss())
     .pipe(gulp.dest(siteDir));
 });
