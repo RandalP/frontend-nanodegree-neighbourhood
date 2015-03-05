@@ -545,7 +545,7 @@ function WeatherViewModel(viewModel) {
 
         // Convert the provided number string to a percentage string.
         function toPercentage(number) {
-          return Number(number) * 100.0 + '%';
+          return number.toFixed(0) * 100.0 + '%';
         }
 
         self.imgSrc('img/' + currently.icon + '.png');
