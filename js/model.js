@@ -157,29 +157,17 @@ function LocationsViewModel(data) {
   }).extend( { throttle: 100 });
 
   /**
-   * Launch the flickr dialog.
-   * @method LocationsViewModel#displayFlickr
-   */
-  self.displayFlickr = function() {
-    window.location.href = '#flickr';
-    flickrViewModel.resize();
-  };
-
-  /**
-   * Launch the weather dialog.
-   * @method LocationsViewModel#displayWeather
-   */
-  self.displayWeather = function() {
-    window.location.href = '#weather';
-    weatherViewModel.resize();
-  };
-
-  /**
    * Selects the specified location.
    * @method LocationsViewModel#setSelected
    * @param {Object} location - the location to select.
    */
   self.setSelected = function(location) {
+    var oldLocation = self.selectedLocation();
+    if (oldLocation) {
+      // Clean up the previous selection.
+      oldLocation.selected(false);
+    }
+    location.selected(true);
     self.selectedLocation(location);
   };
 
@@ -215,13 +203,7 @@ function LocationsViewModel(data) {
    * Selects the currently bound location.
    */
   var selectLocation = function() {
-    var oldLocation = self.selectedLocation();
-    if (oldLocation) {
-      // Clean up the previous selection.
-      oldLocation.selected(false);
-    }
-    this.selected(true);
-    self.selectedLocation(this);
+    self.setSelected(this);
   };
 
   // Add extra info for for each location
@@ -249,6 +231,9 @@ function MapViewModel(viewModel) {
   var self = this;
   self.viewModel = viewModel;
 
+  // For convenience
+  self.selectedLocation = self.viewModel.selectedLocation;
+
   // Defer initialization of map until DOM is loaded.
   google.maps.event.addDomListener(window, 'load', function() {
     self.initializeMap();
@@ -268,6 +253,24 @@ function MapViewModel(viewModel) {
     }, 700);
     self.infoWindow.open(self.map, location.marker);
   });
+
+  /**
+   * Launch the flickr dialog.
+   * @method LocationsViewModel#displayFlickr
+   */
+  self.displayFlickr = function() {
+    window.location.href = '#flickr';
+    flickrViewModel.resize();
+  };
+
+  /**
+   * Launch the weather dialog.
+   * @method LocationsViewModel#displayWeather
+   */
+  self.displayWeather = function() {
+    window.location.href = '#weather';
+    weatherViewModel.resize();
+  };
 
   /**
    * Initializes the Google Map with markers and info window.
@@ -290,7 +293,7 @@ function MapViewModel(viewModel) {
     google.maps.event.addListener(self.infoWindow, 'domready', function() {
       // Need to apply bindings after DOM is ready, but only once.
       if (!self.initialized) {
-        ko.applyBindings(self.viewModel, document.getElementById("info-window"));
+        ko.applyBindings(self, document.getElementById("info-window"));
         self.initialized = true;
       }
     });
@@ -348,7 +351,7 @@ function MapViewModel(viewModel) {
    * @param {Object} location - the location to select.
    */
   self.setSelected = function(location) {
-    self.viewModel.selectedLocation(location);
+    self.viewModel.setSelected(location);
     google.maps.event.trigger(self.map, 'resize');
   };
 
@@ -545,7 +548,7 @@ function WeatherViewModel(viewModel) {
 
         // Convert the provided number string to a percentage string.
         function toPercentage(number) {
-          return Number(number) * 100.0 + '%';
+          return number.toFixed(2) * 100.0 + '%';
         }
 
         self.imgSrc('img/' + currently.icon + '.png');
@@ -555,7 +558,7 @@ function WeatherViewModel(viewModel) {
         self.humidity(toPercentage(currently.humidity));
         self.dewPoint(toTemperature(currently.dewPoint));
         self.precipProbability(toPercentage(currently.precipProbability));
-        self.pressure(currently.pressure + pressureUnits);
+        self.pressure(currently.pressure.toFixed(0) + pressureUnits);
 
         var dt = new Date();
         dt.setTime(Number(currently.time) * 1000);
