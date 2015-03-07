@@ -152,8 +152,6 @@ input[type="search"] {
   background: rgba(0,0,0,0.8);
   z-index: 99999;
   opacity:0;
-  -webkit-transition: opacity 400ms ease-in;
-  -moz-transition: opacity 400ms ease-in;
   transition: opacity 400ms ease-in;
   pointer-events: none;
   box-shadow: 0 2px 10px rgba(0,0,0,0.8);
@@ -169,10 +167,7 @@ input[type="search"] {
   margin: 10% auto;
   padding: 5px 20px 13px 20px;
   border-radius: 2px;
-  background: #fff;
-  background: -moz-linear-gradient(#fff, #999);
-  background: -webkit-linear-gradient(#fff, #999);
-  background: -o-linear-gradient(#fff, #999);
+  background: linear-gradient(#fff, #999);
 }
 
 .close {
@@ -218,21 +213,12 @@ input[type="checkbox"] + label:before {
 }
 
 button {
-  background: #25A6E1;
-  background: -moz-linear-gradient(top,#25A6E1 0%,#188BC0 100%);
-  background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#25A6E1),color-stop(100%,#188BC0));
-  background: -webkit-linear-gradient(top,#25A6E1 0%,#188BC0 100%);
-  background: -o-linear-gradient(top,#25A6E1 0%,#188BC0 100%);
-  background: -ms-linear-gradient(top,#25A6E1 0%,#188BC0 100%);
-  background: linear-gradient(top,#25A6E1 0%,#188BC0 100%);
-  filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#25A6E1',endColorstr='#188BC0',GradientType=0);
+  background: #25a6e1;
+  background: linear-gradient(top,#25a6e1 0%,#188bc0 100%);
   padding:6px 11px;
   color:#fff;
-  //font-size:17px;
   border-radius:4px;
-  -moz-border-radius:4px;
-  -webkit-border-radius:4px;
-  border:1px solid #1A87B9
+  border:1px solid #1a87b9
 }
 
 @media only screen and (max-width: 349px) and (orientation: portrait), (max-height: 349px) and (orientation: landscape) {
@@ -258,7 +244,6 @@ button {
     z-index: 10;
     background-color: #fff;
     position: absolute;
-    -webkit-transform: translate(-300px, 0);
     transform: translate(-300px, 0);
     transition: transform 0.3s ease;
   }
@@ -275,7 +260,7 @@ button {
   .header-menu svg {
     height: 1.75em;
     width: 2em;
-    fill: #E0E0E0;
+    fill: #e0e0e0;
   }
 }
 
