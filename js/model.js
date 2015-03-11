@@ -149,8 +149,8 @@ function LocationsViewModel(data) {
     // Include locations if start of name or suburb matches the filter text
     return ko.utils.arrayFilter(locations, function(location) {
       return (noTextSearch ||
-                location.name.toLowerCase().indexOf(filterText) === 0 ||
-                location.suburb.toLowerCase().indexOf(filterText) === 0) &&
+                location.name.toLowerCase().indexOf(filterText) >= 0 ||
+                location.suburb.toLowerCase().indexOf(filterText) >= 0) &&
               ((self.rockPool() && location.rockPool) ||
                (self.manMade() && !location.rockPool));
     });
@@ -233,11 +233,6 @@ function MapViewModel(viewModel) {
 
   // For convenience
   self.selectedLocation = self.viewModel.selectedLocation;
-
-  // Defer initialization of map until DOM is loaded.
-  google.maps.event.addDomListener(window, 'load', function() {
-    self.initializeMap();
-  });
 
   // Suscribe to changes in selected location to update marker and info window.
   viewModel.selectedLocation.subscribe(function(location) {
@@ -378,6 +373,15 @@ function MapViewModel(viewModel) {
       self.map.setCenter(window.mapBounds.getCenter());
     }
   };
+
+  $(window).load(function() {
+    // Defer initialization of map until DOM is loaded.
+    if (typeof(google) !== 'undefined') {
+      self.initializeMap();
+    } else {
+      self.resize();
+    }
+  });
 }
 
 /**
@@ -446,7 +450,7 @@ function FlickrViewModel(viewModel) {
       }
 
       if (err) {
-        self.errorMessage('Flickr Images could not be loaded.');
+        self.errorMessage('Failed to load Flickr images.');
       } else {
         // Clear error
         self.errorMessage('');
@@ -611,13 +615,12 @@ var weatherViewModel = new WeatherViewModel(locationsViewModel);
 /*
  * Subscribe to window resize events and propagate to view models.
  */
-google.maps.event.addDomListener(window, 'resize', function(e) {
+$(window).resize(true, function(e) {
   locationsViewModel.resize();
   mapViewModel.resize(e);
   flickrViewModel.resize();
   weatherViewModel.resize();
 });
-
 
 /*
  * Open the drawer when the menu icon is clicked.
